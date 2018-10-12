@@ -32,7 +32,7 @@ int(N1,[X|I]) :-
     % little-endian sequence of bits,
     % which ends with [1|+].
 
-    test(pos) :- int(10, [0,1,0,1|+]).
+    test(pos) :- int(10, X), X == [0,1,0,1|+].
 
     %! test(neg)
     % A negative number besides -1 is
@@ -40,7 +40,7 @@ int(N1,[X|I]) :-
     % sequence of bits, which ends with
     % [0|-].
 
-    test(neg) :- int(-7, [1, 0, 0|-]).
+    test(neg) :- int(-7, X), X == [1, 0, 0|-].
 
 :- end_tests(int_doc).
 
