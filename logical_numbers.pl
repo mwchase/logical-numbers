@@ -12,6 +12,8 @@ of integers.
 @license MIT
 */
 
+:- use_module(library(plunit)).
+
 %! int(++Number:int, -LogicalNumber)
 % Unify LogicalNumber with the term
 % value equivalent to Number.
@@ -22,6 +24,25 @@ int(N1,[X|I]) :-
     divmod(N1,2,N2,X)
     , int(N2,I)
 .
+
+:- begin_tests(int_doc).
+
+    %! test(pos)
+    % A positive number is encoded as a
+    % little-endian sequence of bits,
+    % which ends with [1|+].
+
+    test(pos) :- int(10, [0,1,0,1|+]).
+
+    %! test(neg)
+    % A negative number besides -1 is
+    % encoded as a little-endian
+    % sequence of bits, which ends with
+    % [0|-].
+
+    test(neg) :- int(-7, [1, 0, 0|-]).
+
+:- end_tests(int_doc).
 
 lsb_r(+,0).
 lsb_r(-,1).
