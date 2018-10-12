@@ -1,3 +1,21 @@
+% There's no module declaration yet
+% because I want to avoid functional
+% changes for as long as I can.
+
+/** <module> Arbitary-precision integers
+
+This module provides predicates to create
+and manipulate term-based representations
+of integers.
+
+@author Max Chase
+@license MIT
+*/
+
+%! int(++Number:int, -LogicalNumber)
+% Unify LogicalNumber with the term
+% value equivalent to Number.
+
 int(0,+) :- !.
 int(-1,-) :- !.
 int(N1,[X|I]) :-
@@ -14,6 +32,11 @@ lsb_l([H|T],H,T) :- T = [_|_].
 
 lsb(A,B,A) :- lsb_r(A,B).
 lsb(A,B,C) :- lsb_l(A,B,C).
+
+%! inc(?ToIncrement, ?Incremented)
+% Incremented is the term value one more
+% than ToIncrement. This predicate can
+% also decrement.
 
 inc(-,+).
 inc(+,[1|+]).
@@ -50,6 +73,12 @@ full_adder(1,1,1,1,1).
 digit_check(0,_,+).
 digit_check(1,N,N).
 
+%! add(+Augend, +Addend, -Sum)
+%! add(+Subtrahend, -Difference, +Minuend)
+%! add(-Difference, +Subtrahend, +Minuend)
+% Given two ground terms, find their sum
+% or difference.
+
 add(N1,N2,S) :-
     add(0,N1,N2,S)
     , !
@@ -85,6 +114,16 @@ add(C1,I1,I2,I3) :-
     , add(C2,I4,I5,I6)
 .
 
+%! multiply(+Multiplier, +Multiplicand, -Product)
+% Given factors, find the product.
+% It would be nice if this worked the
+% other way around, but currently it
+% mostly doesn't.
+
+multiply(A,B,R) :-
+    multiply(A,B,+,R)
+.
+
 multiply(+,_,Acc,Acc).
 multiply(-,A,Acc,R) :-
     add(A,R,Acc)
@@ -97,9 +136,11 @@ multiply(A1,B1,Acc1,R) :-
     , multiply(A2,B2,Acc2,R)
 .
 
-multiply(A,B,R) :-
-    multiply(A,B,+,R)
-.
+%! le(+LessThanOrEqual, +GreaterThanOrEqual)
+% Succeed if the first argument is less
+% than or equal to the second.
+
+le(A,B) :- le(true,A,B).
 
 le(Bool,X,X,Bool).
 le(_,0,1,true).
@@ -126,11 +167,19 @@ le(A1,I1,I2) :-
     , le(A1,D1,D2,A2)
     , le(A2,I3,I4)
 .
-le(A,B) :- le(true,A,B).
+
+%! range(+Start:End, -Value)
+% Unify Value with the integer terms in
+% the range [Start, End), if any, in
+% ascending order.
 
 range(A:B,_) :- le(B,A), !, fail.
 range(A:_,A).
 range(A:B,I) :- inc(A,A2), range(A2:B,I).
+
+%! sign(+Number, -Sign)
+% Map negative numbers to -1, zero to 0,
+% and positive numbers to 1.
 
 sign(+,+).
 sign(-,-).
