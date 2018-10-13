@@ -4,3 +4,12 @@ before_script:
   - sudo apt-get install swi-prolog-nox
 
 script: swipl -t "load_test_files([]), run_tests." -s logical_numbers.pl
+
+branches:
+  only:
+    # This is where pull requests from "bors r+" are built.
+    - staging
+    # This is where pull requests from "bors try" are built.
+    - trying
+    # Uncomment this to enable building pull requests.
+    #- master
