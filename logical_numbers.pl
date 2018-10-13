@@ -67,6 +67,21 @@ inc([1|T1],[0|T2]) :-
     inc(T1,T2)
 .
 
+:- begin_tests(inc_doc).
+
+    %! test(round_trip)
+    % As long as there's a ground term,
+    % inc works right.
+
+    test(round_trip) :-
+        int(5, Value)
+        , inc(Value, Six)
+        , inc(Five, Six)
+        , Five == Value
+    .
+
+:- end_tests(inc_doc).
+
 flipD(0,1).
 flipD(1,0).
 
