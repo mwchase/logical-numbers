@@ -77,7 +77,7 @@ inc([1|T1],[0|T2]) :-
         int(5, Value)
         , inc(Value, Six)
         , inc(Five, Six)
-        , Five == Six
+        , Five == Value
     .
 
 :- end_tests(inc_doc).
