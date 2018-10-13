@@ -14,8 +14,6 @@ of integers.
 
 :- use_module(library(plunit)).
 
-:- load_test_files([]).
-
 %! int(++Number:int, -LogicalNumber)
 % Unify LogicalNumber with the term
 % value equivalent to Number.
