@@ -20,9 +20,9 @@ of integers.
 
 int(0,+) :- !.
 int(-1,-) :- !.
-int(N1,[X|I]) :-
-    divmod(N1,2,N2,X)
-    , int(N2,I)
+int(Number1,[Digit|Tail]) :-
+    divmod(Number1,2,Number2,Digit)
+    , int(Number2,Tail)
 .
 
 :- begin_tests(int_doc).
@@ -62,9 +62,9 @@ lsb(A,B,C) :- lsb_l(A,B,C).
 inc(-,+).
 inc(+,[1|+]).
 inc([0|-],-).
-inc([0,D|T],[1,D|T]).
-inc([1|T1],[0|T2]) :-
-    inc(T1,T2)
+inc([0,Digit|Tail],[1,Digit|Tail]).
+inc([1|Tail1],[0|Tail2]) :-
+    inc(Tail1,Tail2)
 .
 
 :- begin_tests(inc_doc).
@@ -87,14 +87,14 @@ flipD(1,0).
 
 invert(-,+).
 invert(+,-).
-invert([H1|T1],[H2|T2]) :-
-    flipD(H1,H2)
-    , invert(T1, T2)
+invert([Digit1|Tail1],[Digit2|Tail2]) :-
+    flipD(Digit1,Digit2)
+    , invert(Tail1, Tail2)
 .
 
-minus(P,M) :-
-    invert(P,I)
-    , inc(I,M)
+minus(Left,Right) :-
+    invert(Left,Inverted)
+    , inc(Inverted,Right)
 .
 
 full_adder(0,0,0,0,0).
@@ -107,7 +107,7 @@ full_adder(1,1,0,1,0).
 full_adder(1,1,1,1,1).
 
 digit_check(0,_,+).
-digit_check(1,N,N).
+digit_check(1,Number,Number).
 
 %! add(+Augend, +Addend, -Sum)
 %! add(+Subtrahend, -Difference, +Minuend)
@@ -115,8 +115,8 @@ digit_check(1,N,N).
 % Given two ground terms, find their sum
 % or difference.
 
-add(N1,N2,S) :-
-    add(0,N1,N2,S)
+add(NumberL,NumberR,Sum) :-
+    add(0,NumberL,NumberR,Sum)
     , !
 .
 
@@ -128,26 +128,26 @@ add(0,+,-,-).
 add(1,+,-,+).
 add(0,-,-,[0|-]).
 add(1,-,-,-).
-add(C1,I1,I2,I3) :-
-    lsb_r(I1,D1)
-    , lsb_l(I2,D2,I4)
-    , lsb(I3,D3,I5)
-    , full_adder(C1,D1,D2,C2,D3)
-    , add(C2,I1,I4,I5)
+add(Carry1,NumberL1,NumberR1,Sum1) :-
+    lsb_r(NumberL1,DigitL)
+    , lsb_l(NumberR1,DigitR,NumberR2)
+    , lsb(Sum1,DigitS,Sum2)
+    , full_adder(Carry1,DigitL,DigitR,Carry2,DigitS)
+    , add(Carry2,NumberL1,NumberR2,Sum2)
 .
-add(C1,I1,I2,I3) :-
-    lsb_l(I1,D1,I4)
-    , lsb_r(I2,D2)
-    , lsb(I3,D3,I5)
-    , full_adder(C1,D1,D2,C2,D3)
-    , add(C2,I4,I2,I5)
+add(Carry1,NumberL1,NumberR1,Sum1) :-
+    lsb_l(NumberL1,DigitL,NumberL2)
+    , lsb_r(NumberR1,DigitR)
+    , lsb(Sum1,DigitS,Sum2)
+    , full_adder(Carry1,DigitL,DigitR,Carry2,DigitS)
+    , add(Carry2,NumberL2,NumberR1,Sum2)
 .
-add(C1,I1,I2,I3) :-
-    lsb_l(I1,D1,I4)
-    , lsb_l(I2,D2,I5)
-    , lsb(I3,D3,I6)
-    , full_adder(C1,D1,D2,C2,D3)
-    , add(C2,I4,I5,I6)
+add(Carry1,NumberL1,NumberR1,Sum1) :-
+    lsb_l(NumberL1,DigitL,NumberL2)
+    , lsb_l(NumberR1,DigitR,NumberR2)
+    , lsb(Sum1,DigitS,Sum2)
+    , full_adder(Carry1,DigitL,DigitR,Carry2,DigitS)
+    , add(Carry2,NumberL2,NumberR2,Sum2)
 .
 
 %! multiply(+Multiplier, +Multiplicand, -Product)
@@ -156,52 +156,52 @@ add(C1,I1,I2,I3) :-
 % other way around, but currently it
 % mostly doesn't.
 
-multiply(A,B,R) :-
-    multiply(A,B,+,R)
+multiply(Left,Right,Product) :-
+    multiply(Left,Right,+,Product)
 .
 
 multiply(+,_,Acc,Acc).
-multiply(-,A,Acc,R) :-
-    add(A,R,Acc)
+multiply(-,Right,Acc,Product) :-
+    add(Right,Product,Acc)
 .
-multiply(A1,B1,Acc1,R) :-
-    lsb_l(A1,D,A2)
-    , lsb(B2,0,B1)
-    , digit_check(D,B1,Inc)
+multiply(Left1,Right1,Acc1,Product) :-
+    lsb_l(Left1,Digit,Left2)
+    , lsb(Right2,0,Right1)
+    , digit_check(Digit,Right1,Inc)
     , add(Acc1,Inc,Acc2)
-    , multiply(A2,B2,Acc2,R)
+    , multiply(Left2,Right2,Acc2,Product)
 .
 
 %! le(+LessThanOrEqual, +GreaterThanOrEqual)
 % Succeed if the first argument is less
 % than or equal to the second.
 
-le(A,B) :- le(true,A,B).
+le(Low,High) :- le(true,Low,High).
 
-le(Bool,X,X,Bool).
+le(Result,Equal,Equal,Result).
 le(_,0,1,true).
 le(_,1,0,false).
 
 le(_,-,+).
 le(true,+,+).
 le(true,-,-).
-le(A1,I1,I2) :-
-    lsb_r(I1,D1)
-    , lsb_l(I2,D2,I3)
-    , le(A1,D1,D2,A2)
-    , le(A2,I1,I3)
+le(Result1,Low1,High1) :-
+    lsb_r(Low1,Digit1)
+    , lsb_l(High1,Digit2,High2)
+    , le(Result1,Digit1,Digit2,Result2)
+    , le(Result2,Low1,High2)
 .
-le(A1,I1,I2) :-
-    lsb_l(I1,D1,I3)
-    , lsb_r(I2,D2)
-    , le(A1,D1,D2,A2)
-    , le(A2,I3,I2)
+le(Result1,Low1,High1) :-
+    lsb_l(Low1,Digit1,Low2)
+    , lsb_r(High1,Digit2)
+    , le(Result1,Digit1,Digit2,Result2)
+    , le(Result2,Low2,High1)
 .
-le(A1,I1,I2) :-
-    lsb_l(I1,D1,I3)
-    , lsb_l(I2,D2,I4)
-    , le(A1,D1,D2,A2)
-    , le(A2,I3,I4)
+le(Result1,Low1,High1) :-
+    lsb_l(Low1,Digit1,Low2)
+    , lsb_l(High1,Digit2,High2)
+    , le(Result1,Digit1,Digit2,Result2)
+    , le(Result2,Low2,High2)
 .
 
 %! range(+Start:End, -Value)
@@ -209,9 +209,12 @@ le(A1,I1,I2) :-
 % the range [Start, End), if any, in
 % ascending order.
 
-range(A:B,_) :- le(B,A), !, fail.
-range(A:_,A).
-range(A:B,I) :- inc(A,A2), range(A2:B,I).
+range(Start:End,_) :- le(End,Start), !, fail.
+range(Start:_,Start).
+range(Start1:End,Value) :-
+    inc(Start1,Start2)
+    , range(Start2:End,Value)
+.
 
 %! sign(+Number, -Sign)
 % Map negative numbers to -1, zero to 0,
@@ -220,5 +223,5 @@ range(A:B,I) :- inc(A,A2), range(A2:B,I).
 sign(+,+).
 sign(-,-).
 sign([1|+],[1|+]).
-sign([0|I],S) :- sign(I,S).
-sign([1|I],S) :- I = [_|_], sign(I,S).
+sign([0|Tail],Sign) :- sign(Tail,Sign).
+sign([1|Tail],Sign) :- Tail = [_|_], sign(Tail,Sign).
